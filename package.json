@@ -5,6 +5,7 @@
   "main": "index.ts",
   "scripts": {
     "build": "tsc",
+    "repl": "node --experimental-repl-await",
     "generate-keypair": "node build/index.js generate-keypair",
     "test": "echo \"Error: no test specified\" && exit 1"
   },
