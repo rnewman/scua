@@ -1,8 +1,16 @@
 # scua
 
-An exploration into distributed identity, addressing the Bluesky 'satellite' challenge.
+An exploration into distributed identity, addressing the Bluesky 'Satellite' challenge.
 
 *scua* is the Old English word for cloud, which ended up as today's word *sky*. I couldn't pass up a word containing <abbr title="User Agent">UA</abbr> (User-Agent).
+
+See [DISCUSSION.md](docs/DISCUSSION.md) for a response to the Satellite prompt and some discussion of the approach taken.
+
+See [DESIGN.md](docs/DESIGN.md) for an overview of the solution implemented in this repo.
+
+## Caveats
+
+This project is an experiment. It has not been vetted by experts, it cuts corners in implementation, and is likely to be cryptographically unsound. Be warned.
 
 ## Tooling
 
@@ -53,8 +61,3 @@ npm run TODO
 ```
 
 ## Critique of tooling
-
-## Discussion
-
-### Identities
-### DPKI
