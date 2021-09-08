@@ -1,0 +1,22 @@
+{
+  "name": "scua",
+  "version": "0.0.1",
+  "description": "Experiments around distributed identity.",
+  "main": "index.ts",
+  "scripts": {
+    "build": "tsc",
+    "generate-keypair": "node build/index.js generate-keypair",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "author": "Richard Newman <rnewman@twinql.com>",
+  "license": "MIT",
+  "devDependencies": {
+    "@typescript-eslint/eslint-plugin": "^4.31.0",
+    "@typescript-eslint/parser": "^4.31.0",
+    "eslint": "^7.32.0",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "@decentralized-identity/ion-tools": "^0.1.0"
+  }
+}
