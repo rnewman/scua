@@ -10,7 +10,8 @@
       "ES2015.Reflect",
       "ES2016.Array.Include",
       "ES2017.SharedMemory",
-      "ES2018"
+      "ES2018",
+      "ES2021",
     ],
     "module": "commonjs",
     "moduleResolution": "node",
@@ -22,7 +23,7 @@
     "removeComments": true,
     "sourceMap": true,
     "strict": true,
-    "target": "ES2018"
+    "target": "ES2021"
   },
   "include": [
     "./**/*.ts"
