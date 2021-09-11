@@ -6,7 +6,7 @@ An exploration into distributed identity, addressing the Bluesky 'Satellite' cha
 
 See [DISCUSSION.md](docs/DISCUSSION.md) for a response to the Satellite prompt and some discussion of the approach taken.
 
-See [DESIGN.md](docs/DESIGN.md) for an overview of the solution implemented in this repo.
+See [DESIGN.md](docs/DESIGN.md) for an overview of the solution implemented in this repo and some brief analysis of other systems.
 
 ## Caveats
 

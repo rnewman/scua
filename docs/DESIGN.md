@@ -4,8 +4,8 @@ This system uses DIDs as stable identities/identifiers and sources of key materi
 
 The process of associating an identity with a resource (e.g., a Twitter account) involves the following steps:
 
-* Constructing an identifier for the identity. Here it is a DID URI. This will be the *subject* of an assertion.
-* Constructing an identifier for the resource. This might be an HTTP URI, or it might be some other protocol scheme such as an [`ssb:` URI](https://github.com/ssb-ngi-pointer/ssb-uri-spec). This will be the *object* of an assertion.
+* Constructing or finding an identifier for the identity. Here it is a DID URI. This will be the *subject* of an assertion.
+* Constructing an identifier for the resource. This might be an HTTP URI including path, or it might be some other protocol scheme such as an [`ssb:` URI](https://github.com/ssb-ngi-pointer/ssb-uri-spec). This will be the *object* of an assertion.
 * Formulating an assertion about the subject to claim ownership using some JSON-LD vocabulary.
 * Encoding that assertion as the *claims* in a [Verifiable Credential](https://www.w3.org/TR/vc-data-model/).
 
@@ -30,7 +30,7 @@ Finally, we need a decentralized way of distributing these credentials to stakeh
 
 ## Specific example: a Twitter account
 
-An assertion is made about the Twitter profile URL, e.g., `https://twitter.com/scuasky`, in a Verifiable Credential, and signed with the DID's private key.
+An assertion is made about the Twitter profile URL, e.g., `https://twitter.com/scuasky`, in a Verifiable Credential, and signed with the DID's private key. Here we make the credential expire monthly, limiting the blast radius of losing access to the Twitter account.
 
 ```json
 {
@@ -41,11 +41,11 @@ An assertion is made about the Twitter profile URL, e.g., `https://twitter.com/s
   "type": ["VerifiableCredential", "ScuaClaim"],
   "issuer": "did:example:ebfeb1f712ebc6f1c276e12ec21",
   "issuanceDate": "2021-09-09T00:00:00Z",
+  "expirationDate": "2021-10-09T00:00:00Z",
   "credentialSubject": {
     "id": "did:example:ebfeb1f712ebc6f1c276e12ec21",
     "ownerOf": {
       "id": "https://twitter.com/scuasky",
-      "sharedWith": [],
       "name": [{
         "value": "Example Twitter Account",
         "lang": "en"
@@ -64,10 +64,9 @@ An assertion is made about the Twitter profile URL, e.g., `https://twitter.com/s
 
 This credential is stored in IPFS: `QmaTN32if4oQHWgYMyeSqnxfe9dgYuvk6tLBmZL2ZLh6gd`.
 
-We can now produce a compact claim: `scua:QmaTN32if4oQHWgYMyeSqnxfe9dgYuvk6tLBmZL2ZLh6gd/did:example:ebfeb1f712ebc6f1c276e12ec21` (and we could go more compact by using high-density encodings using emoji). These 91 characters (or even just the first 51) can be posted in a tweet or in a bio, or even as a QR code. A browser encountering this string knows how to (a) determine whether this Twitter account is owned by a given DID (with the longer form, it doesn't even need to hit IPFS!), and (b) can determine which DID owns this Twitter account.
+We can now produce a compact claim: `scua:QmaTN32if4oQHWgYMyeSqnxfe9dgYuvk6tLBmZL2ZLh6gd/did:example:ebfeb1f712ebc6f1c276e12ec21` (and we could achieve a more compact representation by using high-density encodings using emoji). These 91 characters (or even just the first 51) can be posted in a tweet or in a bio, or even as a QR code. Software encountering this string is able to (a) determine whether this Twitter account is owned by a given DID (with the longer form, it doesn't even need to hit IPFS to short-circuit on non-ownership!), and (b) can determine which DID owns this Twitter account.
 
-```
-ipfs
+This same mechanism can apply to non-DID identifiers that are associated with key material, such as SSB identities: the credential can refer to the identifier by `ssb:` URI, and we need only decide on a dereferenceable URI to put in the `verificationMethod` field.
 
 ## What about NFTs?
 
