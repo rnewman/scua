@@ -6,52 +6,42 @@
 
 import * as ION from '@decentralized-identity/ion-tools';
 
-interface PublicJWK {
-  kty: 'EC';
-  crv: 'secp256k1';
-  x: string;
-  y: string;
-};
+import { constructCredential, CredentialWithProof, Proof } from './credential';
+import { DID, DIDResponse, KeyPair, PublicJWK } from './did';
+import { SignatureNotValid, VerificationFailed } from './errors';
 
-interface PrivateJWK {
-  kty: 'EC';
-  crv: 'secp256k1';
-  d: string;
-  x: string;
-  y: string;
-};
+const DEFAULT_TYPE = 'EcdsaSecp256k1VerificationKey2019';
 
-interface KeyPair {
-  privateJwk: PrivateJWK;
-  publicJwk: PublicJWK;
+interface PublicKeySource {
+  getPublicKey(uri: string): Promise<PublicJWK>;
 }
 
-interface DID {
-  getURI(kind?: 'long' | 'short'): Promise<string>;
+interface DereferenceableKeyMatter {
+  keyPair: KeyPair;
+  getKeyURI(): Promise<string>;
 }
 
-type KeyID = string;
-
-interface VerificationMethod {
-  id: KeyID;
-  controller: string;
-  type: string;
-  publicKeyJwk: PublicJWK;
-}
-
-interface DIDResponse {
-  didDocument: {
-    id: string,
-    verificationMethod: VerificationMethod[],
-    authentication: KeyID[],
-  };
-
-  // TODO: document metadata.
-}
-
-class Identity {
-  constructor(private keyPair: KeyPair, private did: DID) {
+export class DIDIdentity implements DereferenceableKeyMatter, PublicKeySource {
+  constructor(readonly keyPair: KeyPair, private did: DID) {
     this.debug();
+  }
+
+  /*
+   * DereferenceableKeyMatter
+   */
+  async getKeyURI(): Promise<string> {
+    return this.did.getURI() + '#key-1';     // TODO
+  }
+
+  /*
+   * PublicKeySource
+   */
+  async getPublicKey(uri: string): Promise<PublicJWK> {
+    if (uri === await this.getKeyURI()) {
+      return this.keyPair.publicJwk;
+    }
+
+    throw new Error('Unknown key');
   }
 
   async debug(): Promise<void> {
@@ -63,46 +53,108 @@ class Identity {
     return this.did.getURI();
   }
 
-  async signJws(payload: string, options?: { detached?: boolean, header?: object }): Promise<string> {
-    return ION.signJws({ payload, privateJwk: this.keyPair.privateJwk, header: options?.header, detached: !!options?.detached });
-  }
-}
+  async claimOwnership(resource: string, additionalKey?: DereferenceableKeyMatter): Promise<CredentialWithProof> {
+    const created = new Date().toISOString();
+    const proofPurpose = 'assertionMethod';
+    const type = 'RsaSignature2018';
 
-const DEFAULT_TYPE = 'EcdsaSecp256k1VerificationKey2019';
-export async function createIdentity(): Promise<Identity> {
-  const keyPair = await ION.generateKeyPair();
+    const credential = constructCredential(resource, await this.getURI());
 
-  const did = new ION.DID({
-    content: {
-      publicKeys: [{
-        id: 'key-1',
-        type: DEFAULT_TYPE,
-        publicKeyJwk: keyPair.publicJwk,
-        purposes: [ 'authentication' ]
-      }],
-      services: [],
+    // ES6 JSON.stringify normalizes appropriately for JWS.
+    const credentialString = JSON.stringify(credential);
+
+    // If we got a second key, we'll produce two proofs. Otherwise, just one, which
+    // for clarity we'll omit without the containing set/array.
+    let proof: Proof | Proof[];
+
+    const didProof: Proof = {
+      created,
+      type,
+      proofPurpose,
+      verificationMethod: await this.getKeyURI(),
+      jws: await ION.signJws({ payload: credentialString, privateJwk: this.keyPair.privateJwk }),
+    };
+
+    if (additionalKey) {
+      const additionalProof: Proof = {
+        created,
+        type,
+        proofPurpose,
+        verificationMethod: await additionalKey.getKeyURI(),
+        jws: await ION.signJws({ payload: credentialString, privateJwk: additionalKey.keyPair.privateJwk }),
+      };
+      proof = [ didProof, additionalProof ];
+    } else {
+      proof = didProof;
     }
-  });
 
-  return new Identity(keyPair, did);
+    return {
+      ...credential,
+      proof,
+    };
+  }
+
+  static async create(): Promise<DIDIdentity> {
+    const keyPair = await ION.generateKeyPair();
+
+    const did = new ION.DID({
+      content: {
+        publicKeys: [{
+          id: 'key-1',
+          type: DEFAULT_TYPE,
+          publicKeyJwk: keyPair.publicJwk,
+          purposes: [ 'authentication' ]
+        }],
+        services: [],
+      }
+    });
+
+    return new DIDIdentity(keyPair, did);
+  }
 }
 
 export async function fetchDID(uri: string, options?: { endpoint?: string }): Promise<DIDResponse> {
   return ION.resolve(uri, options);
 }
 
-export class SignatureNotValid extends Error {
-  constructor(public jws: string) {
-    super('Signature not valid: ' + jws);
-  }
-}
-
-export async function validateJWS(uri: string, jws: string): Promise<void> {
-  const didDocument = await (await fetchDID(uri)).didDocument;
+/**
+ * Verify the provided JWS by fetching and examining the provided DID URI.
+ * If the JWS was not signed by one of the keys in the DID, rejects with `SignatureNotValid`.
+ */
+export async function verifyJWSWithDID(didURI: string, jws: string): Promise<void> {
+  const didDocument = await (await fetchDID(didURI)).didDocument;
   const keyIDs = new Set(didDocument.authentication);
   const publicKeys = didDocument.verificationMethod.filter(({ id }) => keyIDs.has(id));
-  const validateWithKey = ({ publicKeyJwk }: { publicKeyJwk: PublicJWK }) => ION.verifyJws({ jws, publicJwk: publicKeyJwk });
 
-  return Promise.any(publicKeys.map(validateWithKey))
+  // Attempt to validate every key at once. If all fail, turn the promise race failure
+  // into a SignatureNotValid.
+  return Promise.any(publicKeys.map(({ publicKeyJwk }) => ION.verifyJws({ jws, publicJwk: publicKeyJwk })))
                 .catch(e => Promise.reject(new SignatureNotValid(jws)));
+}
+
+/**
+ * Verify all of the proofs in the provided credential, using the providing
+ * source of keys to retrieve public keys by URI.
+ *
+ * If the credentials proofs were not signed by retrievable keys, rejects with
+ * `VerificationFailed`.
+ */
+export async function verifyCredential(credential: CredentialWithProof, keySource: PublicKeySource): Promise<void> {
+  async function verify(proofs: Proof[]): Promise<void> {
+    const promises = [];
+    for (const proof of proofs) {
+      const key = await keySource.getPublicKey(proof.verificationMethod);
+      promises.push(ION.verifyJws({ jws: proof.jws, publicJwk: key }));
+    }
+
+    return Promise.any(promises)
+                  .catch(_ => Promise.reject(new VerificationFailed()));
+  }
+
+  if ('proofPurpose' in credential.proof) {
+    // Just one.
+    return verify([credential.proof]);
+  }
+
+  return verify(credential.proof);
 }

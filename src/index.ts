@@ -1,22 +1,21 @@
+import { CredentialWithProof } from './credential';
+import { SignatureNotValid } from "./errors";
 import {
-  createIdentity,
-  SignatureNotValid,
-  validateJWS,
+  DIDIdentity, verifyCredential,
 } from './id';
 
 console.info('Hello, bluesky!');
 
-export async function createAndSign(): Promise<{ jws: string, did: string }> {
-  const identity = await createIdentity();
-  const did = await identity.getURI();
-  const jws = await identity.signJws('Hello, bluesky!');
+export async function createAndSign(): Promise<{ credential: CredentialWithProof, identity: DIDIdentity }> {
+  const identity = await DIDIdentity.create();
+  const credential = await identity.claimOwnership('https://twitter.com/scuasky');
 
-  return { jws, did };
+  return { credential, identity };
 }
 
-export async function verify({ jws, did }: { jws: string, did: string }): Promise<void> {
-  console.info('Verifying', jws, did);
-  return validateJWS(did, jws).then(() => undefined);
+export async function verify({ credential, identity }: { credential: CredentialWithProof, identity: DIDIdentity }): Promise<void> {
+  console.info('Verifying', credential, identity);
+  return verifyCredential(credential, identity).then(() => undefined);
 }
 
 export async function roundtrip(): Promise<void> {
