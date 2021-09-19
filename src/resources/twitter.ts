@@ -1,7 +1,48 @@
-import { CredentialWithProof } from '../credential';
-import { PublicJWK } from '../did';
+import type { CredentialWithProof } from '../credential';
+import type { PublicJWK } from '../did';
+import { CredentialFinder, CredentialReport, FinderFactory } from '../extract/extractcredential';
 import { DIDIdentity } from '../id';
-import { Claimable } from './claim';
+import type { Claimable } from './claim';
+
+export class TwitterFinderFactory implements FinderFactory {
+  async forURL(url: string): Promise<CredentialFinder | undefined> {
+    const matches = /^(https:\/\/twitter\.com\/[^\/?#]+)(\?.*)?(#.*)?$/.exec(url);
+    if (!matches) {
+      return;
+    }
+
+    const canonical = matches[1];
+    return new TwitterCredentialFinder(url, canonical);
+  }
+}
+
+const TEST_DID = DIDIdentity.create();
+
+class TwitterCredentialFinder extends CredentialFinder {
+  constructor(private url: string, private canonicalURL: string) {
+    super();
+  }
+
+  async findCredentials(): Promise<CredentialReport | undefined> {
+    console.info('TODO', this.url, this.canonicalURL);
+
+    const did = await TEST_DID;
+    const credential = await new TwitterClaim('rnewman').claim(did);
+    const verified = true;
+    const validated = true;
+    return {
+      url: this.url,
+      canonicalURL: this.canonicalURL,
+      kind: 'https://twitter.com#profile',
+      indirect: 'ipns://',
+      resolved: 'ipfs://',
+      credential,
+      verified,
+      validated,
+    };
+    // return undefined;
+  }
+}
 
 export class TwitterClaim implements Claimable {
   constructor(private username: string) {

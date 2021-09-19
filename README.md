@@ -12,6 +12,8 @@ See [DESIGN.md](docs/DESIGN.md) for an overview of the solution implemented in t
 
 This project is an experiment. It has not been vetted by experts, it cuts corners in implementation, and is likely to be cryptographically unsound. Be warned.
 
+Note particularly that this system generates private key material for DIDs and stores it in the browser's storage layer. Additionally, those private keys can be trivially exported, and must be stored in plaintext for later re-import. Do not use valuable private keys when evaluating this system.
+
 ## Tooling
 
 This project uses:

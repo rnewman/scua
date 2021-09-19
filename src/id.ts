@@ -42,7 +42,7 @@ export class DIDIdentity implements DereferenceableKeyMatter, PublicKeySource {
    * DereferenceableKeyMatter
    */
   async getKeyURI(): Promise<string> {
-    return this.did.getURI() + '#key-1';     // TODO
+    return (await this.did.getURI()) + '#key-1';     // TODO
   }
 
   /*
@@ -104,6 +104,15 @@ export class DIDIdentity implements DereferenceableKeyMatter, PublicKeySource {
       ...credential,
       proof,
     };
+  }
+
+  static async deserialize(didState: string): Promise<DIDIdentity> {
+    const state = JSON.parse(didState);
+    return new DIDIdentity(state.keyPair, new ION.DID(state.did));
+  }
+
+  async serialize(): Promise<string> {
+    return JSON.stringify({ did: await this.did.getState(), keyPair: this.keyPair });
   }
 
   static async create(): Promise<DIDIdentity> {

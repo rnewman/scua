@@ -1,6 +1,6 @@
-import { CredentialWithProof } from '../credential';
-import { PublicJWK } from '../did';
-import { DIDIdentity } from '../id';
+import type { CredentialWithProof } from '../credential';
+import type { PublicJWK } from '../did';
+import type { DIDIdentity } from '../id';
 
 export interface Claimable {
   // TODO: sometimes we need to take action!
