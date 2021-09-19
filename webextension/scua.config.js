@@ -1,11 +1,13 @@
+import typescript from '@rollup/plugin-typescript';
 import svelte from 'rollup-plugin-svelte';
 import commonjs from '@rollup/plugin-commonjs';
 import resolve from '@rollup/plugin-node-resolve';
 import livereload from 'rollup-plugin-livereload';
 import { terser } from 'rollup-plugin-terser';
 import sveltePreprocess from 'svelte-preprocess';
-import typescript from '@rollup/plugin-typescript';
 import css from 'rollup-plugin-css-only';
+import json from '@rollup/plugin-json';
+import nodePolyfills from 'rollup-plugin-polyfill-node';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -36,9 +38,15 @@ export default {
 		sourcemap: false,
 		name: 'scua',
 		format: 'iife',
-		file: 'build/scua.js'
+		file: 'build/scua.js',
+		intro: 'const global = window;',  // Massive hack for rollup.
 	},
 	plugins: [
+		nodePolyfills({
+			crypto: false,   // We will use WebCrypto.
+			include: ['../node_modules/**/*.ts', '../src/**/*.ts', '**/*.ts'],
+		}),
+
 		svelte({
 			preprocess: sveltePreprocess({ sourceMap: !production }),
 			compilerOptions: {
@@ -47,6 +55,7 @@ export default {
         customElement: false
 			}
 		}),
+
 		// we'll extract any component CSS out into
 		// a separate file - better for performance
 		css({ output: 'scua.css' }),
@@ -60,11 +69,22 @@ export default {
 			browser: false,
 			dedupe: ['svelte']
 		}),
-		commonjs(),
 		typescript({
+			include: ['../src/**/*.ts'],
 			sourceMap: !production,
 			inlineSources: !production
 		}),
+		commonjs({
+			include: [
+				'node_modules/@transmute/did-key-common/dist/*.js',
+				'../node_modules/**/*.js',
+		  	'../src/**/*.js',
+			],
+		}),
+
+		// Because `elliptic`'s package.json was being imported by dependencies.
+		// Frontend engineering is *wild*.
+		json(),
 
 		// In dev mode, call `npm run start` once
 		// the bundle has been generated

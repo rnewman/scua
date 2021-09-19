@@ -1,11 +1,36 @@
 <svelte:options tag={null}/>
 <script lang="ts">
-  // import browser from "webextension-polyfill";
-  console.info('yyy');
+  import PageValidator from './PageValidator.svelte';
+
+  async function currentTab(): Promise<browser.Tabs.Tab> {
+    const currentTabs = await browser.tabs.query({ active: true, currentWindow: true });
+    return currentTabs && currentTabs[0];
+  }
 </script>
 
 <main>
-  <p>Hello, world</p>
+  <div id="validate">
+    <h1>Who owns this page?</h1>
+    {#await currentTab() then tab}
+    <PageValidator {tab}></PageValidator>
+    {/await}
+  </div>
+  <div id="identity">
+    <h1>Your identity</h1>
+    <div>
+      <button type="button">Generate</button>
+    </div>
+    <div>
+      <button type="button">Import</button>
+    </div>
+    <div>
+      <button type="button" disabled>Export</button>
+    </div>
+  </div>
+  <div id="claim">
+    <h1>Claim this page</h1>
+    <button type="button">Claim</button>
+  </div>
 </main>
 
 <style>

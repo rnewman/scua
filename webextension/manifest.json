@@ -9,7 +9,10 @@
     "96": "icons/icon-96.png"
   },
 
-  "permissions": ["storage"],
+  "permissions": [
+    "storage",
+    "tabs"
+  ],
 
   "content_scripts": [
     {
