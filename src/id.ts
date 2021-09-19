@@ -4,11 +4,23 @@
  * get to working functionality.
  */
 
-import * as ION from '@decentralized-identity/ion-tools';
-
 import { constructCredential, CredentialWithProof, Proof } from './credential';
-import { DID, DIDResponse, KeyPair, PublicJWK } from './did';
+import type { DIDResponse, KeyPair, PublicJWK, PrivateJWK, DIDState, DIDOp } from './did';
 import { SignatureNotValid, VerificationFailed } from './errors';
+
+declare module ION {
+  type KeyPairType = 'Ed25519' | 'EdDSA' | 'secp256k1' | 'ES256K';
+  class DID {
+    constructor({ ops, content }: { ops?: DIDOp[], content?: object });
+    getURI(kind?: 'long' | 'short'): Promise<string>;
+    getState(): Promise<DIDState>;
+    getAllOperations(): Promise<DIDOp[]>;
+  }
+  function resolve(didUri: string, options?: { nodeEndpoint?: string }): Promise<DIDResponse>;
+  function signJws({ payload, privateJwk }: { payload: string, privateJwk: PrivateJWK }): Promise<string>;
+  function verifyJws({ jws, publicJwk, payload }: { jws: string, payload?: string, publicJwk: PublicJWK }): Promise<string>;
+  function generateKeyPair(type?: KeyPairType): Promise<KeyPair>;
+};
 
 const DEFAULT_TYPE = 'EcdsaSecp256k1VerificationKey2019';
 
@@ -22,7 +34,7 @@ interface DereferenceableKeyMatter {
 }
 
 export class DIDIdentity implements DereferenceableKeyMatter, PublicKeySource {
-  constructor(readonly keyPair: KeyPair, private did: DID) {
+  constructor(readonly keyPair: KeyPair, private did: ION.DID) {
     this.debug();
   }
 
@@ -113,7 +125,7 @@ export class DIDIdentity implements DereferenceableKeyMatter, PublicKeySource {
   }
 }
 
-export async function fetchDID(uri: string, options?: { endpoint?: string }): Promise<DIDResponse> {
+export async function fetchDID(uri: string, options?: { nodeEndpoint?: string }): Promise<DIDResponse> {
   return ION.resolve(uri, options);
 }
 
@@ -129,6 +141,7 @@ export async function verifyJWSWithDID(didURI: string, jws: string): Promise<voi
   // Attempt to validate every key at once. If all fail, turn the promise race failure
   // into a SignatureNotValid.
   return Promise.any(publicKeys.map(({ publicKeyJwk }) => ION.verifyJws({ jws, publicJwk: publicKeyJwk })))
+                .then(() => {})
                 .catch(e => Promise.reject(new SignatureNotValid(jws)));
 }
 
@@ -148,6 +161,7 @@ export async function verifyCredential(credential: CredentialWithProof, keySourc
     }
 
     return Promise.any(promises)
+                  .then(() => {})
                   .catch(_ => Promise.reject(new VerificationFailed()));
   }
 

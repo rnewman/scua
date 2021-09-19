@@ -6,6 +6,11 @@ import {
 
 console.info('Hello, bluesky!');
 
+import * as ION from '@decentralized-identity/ion-tools';
+
+// This is our build hack so we can use the web version or the Node version of ION.
+((globalThis as unknown) as any).ION = ION;
+
 export async function createAndSign(): Promise<{ credential: CredentialWithProof, identity: DIDIdentity }> {
   const identity = await DIDIdentity.create();
   const credential = await identity.claimOwnership('https://twitter.com/scuasky');

@@ -22,8 +22,16 @@ export interface KeyPair {
   publicJwk: PublicJWK;
 }
 
-export interface DID {
-  getURI(kind?: 'long' | 'short'): Promise<string>;
+
+export interface DIDOp {
+  operation: 'create' | 'deactivate' | 'recover';
+  content: object;
+}
+
+export interface DIDState {
+  shortForm: string;
+  longForm: string;
+  ops: DIDOp[];
 }
 
 type KeyID = string;
