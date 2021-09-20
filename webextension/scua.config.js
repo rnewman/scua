@@ -74,9 +74,12 @@ export default {
 			sourceMap: !production,
 			inlineSources: !production
 		}),
+
+		// Rewrite `require`.
 		commonjs({
 			include: [
 				'node_modules/@transmute/did-key-common/dist/*.js',
+				'node_modules/ipfs*/**/*.js',
 				'../node_modules/**/*.js',
 		  	'../src/**/*.js',
 			],

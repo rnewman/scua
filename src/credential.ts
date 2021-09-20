@@ -1,10 +1,18 @@
+// This is actually an open set of JSON-LD.
+export interface CredentialSubject {
+  id: string;
+  ownerOf: {
+    id: string,
+  };
+}
+
 export interface CredentialWithoutProof {
   '@context': string[];
   type: string[];
   issuer: string;
   issuanceDate: string;
   expirationDate: string;
-  credentialSubject: object;
+  credentialSubject: CredentialSubject;
 }
 
 export interface Proof {

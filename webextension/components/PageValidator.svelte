@@ -25,9 +25,24 @@
 <p>Fetching credential…</p>
 {:then credential}
   {#if credential}
-  <!-- TODO -->
-  <p>The owner of {url} ({credential.canonicalURL}) is {credential.credential.issuer}.</p>
-  <p>The credential is {JSON.stringify(credential)}</p>
+
+  <!--
+    If these weren't true, we wouldn't have got here.
+    id === credential.issuer
+    ownerOf.id === credential.canonicalURL
+    -->
+  <dl>
+    <dt>URL</dt>
+    <dd>{url}</dd>
+    <dt>Canonical URL</dt>
+    <dd>{credential.canonicalURL}</dd>
+    <dt>Owner</dt>
+    <dd width="360px" style="overflow: auto">{credential.credential.credentialSubject.id}</dd>
+    <dt>Until</dt>
+    <dd>{credential.credential.expirationDate}</dd>
+  </dl>
+  <p>The credential is:</p>
+  <pre width="360px" style="overflow: auto">{JSON.stringify(credential, null, 2)}</pre>
   <p>This identity also owns…</p>
   {:else}
   <p>Nobody has claimed ownership of {url}. Maybe you should?</p>
