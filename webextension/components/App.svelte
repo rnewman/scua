@@ -6,6 +6,19 @@
     const currentTabs = await browser.tabs.query({ active: true, currentWindow: true });
     return currentTabs && currentTabs[0];
   }
+
+  async function testIPFS() {
+    const start = Date.now();
+    /* @ts-ignore */
+    const ipfs = await window.IpfsCore.create()
+    const middle = Date.now();
+    const added = await ipfs.add('Hello world')
+    const end = Date.now();
+    console.info(added, 'took', end - start, middle - start);
+    await ipfs.stop();
+  }
+
+  testIPFS();
 </script>
 
 <main>
