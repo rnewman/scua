@@ -70,15 +70,19 @@ export default {
 			dedupe: ['svelte']
 		}),
 		typescript({
-			include: ['../src/**/*.ts'],
+			include: ['*.ts', '../src/**/*.ts'],
 			sourceMap: !production,
 			inlineSources: !production
 		}),
 
-		// Rewrite `require`.
 		commonjs({
 			include: [
+				// 'default' is not exported.
+				'node_modules/webextension-polyfill/dist/browser-polyfill.js',
+
+				// Rewrite `require`.
 				'node_modules/@transmute/did-key-common/dist/*.js',
+
 				'node_modules/ipfs*/**/*.js',
 				'../node_modules/**/*.js',
 		  	'../src/**/*.js',

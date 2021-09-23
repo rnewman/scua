@@ -1,10 +1,13 @@
 <script lang="ts">
-  import type { CredentialReport } from '../../src/extract/extractcredential';
-  import { findCredentialForURL } from '../../src/extract/find';
-
   import browser from 'webextension-polyfill';
 
+  import type { CredentialReport } from '../../src/extract/extractcredential';
+  import { findCredentialForURL } from '../../src/extract/find';
+  import type { ExtensionDIDStorage } from '../storage';
+
   export let tab: browser.Tabs.Tab;
+  export let storage: ExtensionDIDStorage;
+
   let url = tab.url;
 
   // TODO: DID cache.
@@ -15,14 +18,14 @@
       console.info('No URL for tab.');
       return;
     }
-    const credential = await findCredentialForURL(url);
+    const credential = await findCredentialForURL(url, storage);
     console.info('Credential report:', credential);
     return credential;
   }
 </script>
 
 {#await examineCredential()}
-<p>Fetching credential…</p>
+<p>Fetching credential… from {storage}</p>
 {:then credential}
   {#if credential}
 

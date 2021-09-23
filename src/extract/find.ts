@@ -1,4 +1,5 @@
 import { TwitterFinderFactory } from "../resources/twitter";
+import type { ExtensionDIDStorage } from "../../webextension/storage";
 import type { CredentialFinder, CredentialReport, FinderFactory } from "./extractcredential";
 
 const defaultFinders: {[key: string]: FinderFactory[]} = {
@@ -20,6 +21,6 @@ async function finderForURL(url: string): Promise<CredentialFinder | undefined> 
   return undefined;
 }
 
-export async function findCredentialForURL(url: string): Promise<CredentialReport | undefined> {
-  return (await finderForURL(url))?.findCredentials();
+export async function findCredentialForURL(url: string, storage: ExtensionDIDStorage): Promise<CredentialReport | undefined> {
+  return (await finderForURL(url))?.findCredentials(storage);
 }

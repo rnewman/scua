@@ -1,7 +1,8 @@
+import type { ExtensionDIDStorage } from '../../webextension/storage';
 import type { CredentialWithProof } from '../credential';
 import type { PublicJWK } from '../did';
 import { CredentialFinder, CredentialReport, FinderFactory } from '../extract/extractcredential';
-import { DIDIdentity } from '../id';
+import type { DIDIdentity } from '../id';
 import type { Claimable } from './claim';
 
 export class TwitterFinderFactory implements FinderFactory {
@@ -16,17 +17,15 @@ export class TwitterFinderFactory implements FinderFactory {
   }
 }
 
-const TEST_DID = DIDIdentity.create();
-
 class TwitterCredentialFinder extends CredentialFinder {
   constructor(private url: string, private canonicalURL: string) {
     super();
   }
 
-  async findCredentials(): Promise<CredentialReport | undefined> {
+  async findCredentials(storage: ExtensionDIDStorage): Promise<CredentialReport | undefined> {
     console.info('TODO', this.url, this.canonicalURL);
 
-    const did = await TEST_DID;
+    const did = await storage.getSelf();
     const credential = await new TwitterClaim('rnewman').claim(did);
     const verified = true;
     const validated = true;

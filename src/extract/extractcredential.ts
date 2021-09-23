@@ -1,3 +1,4 @@
+import type { ExtensionDIDStorage } from '../../webextension/storage';
 import type { CredentialWithProof } from '../credential';
 
 export interface CredentialReport {
@@ -16,6 +17,6 @@ export interface FinderFactory {
 }
 
 export abstract class CredentialFinder {
-  abstract findCredentials(): Promise<CredentialReport | undefined>;
+  abstract findCredentials(storage: ExtensionDIDStorage): Promise<CredentialReport | undefined>;
 }
 
