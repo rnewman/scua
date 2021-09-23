@@ -10,6 +10,7 @@
   },
 
   "permissions": [
+    "activeTab",
     "storage",
     "tabs"
   ],
@@ -21,7 +22,7 @@
     }
   ],
 
-  "content_security_policy": "default-src 'self'; connect-src 'self' wss://*.preload.ipfs.io wss://*.preload.libp2p.io wss://*.bootstrap.libp2p.io https://dns.google https://cloudflare-dns.com https://*.preload.ipfs.io; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/;",
+  "content_security_policy": "default-src 'self'; connect-src 'self' wss://*.preload.ipfs.io wss://*.preload.libp2p.io wss://*.bootstrap.libp2p.io https://dns.google https://cloudflare-dns.com https://*.preload.ipfs.io https://*.did.microsoft.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/;",
 
   "browser_action": {
     "default_icon": {

@@ -4,6 +4,7 @@ import { SignatureNotValid } from "./errors";
 import {
   DIDIdentity, verifyCredential,
 } from './id';
+
 import { deflate } from 'pako';
 console.info('Hello, bluesky!');
 

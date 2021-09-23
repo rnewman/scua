@@ -138,12 +138,8 @@ export async function fetchDID(uri: string, options?: { nodeEndpoint?: string })
   return ION.resolve(uri, options);
 }
 
-/**
- * Verify the provided JWS by fetching and examining the provided DID URI.
- * If the JWS was not signed by one of the keys in the DID, rejects with `SignatureNotValid`.
- */
-export async function verifyJWSWithDID(didURI: string, jws: string): Promise<void> {
-  const didDocument = await (await fetchDID(didURI)).didDocument;
+export async function verifyJWSWithDIDResponse(didResponse: DIDResponse, jws: string): Promise<void> {
+  const didDocument = didResponse.didDocument;
   const keyIDs = new Set(didDocument.authentication);
   const publicKeys = didDocument.verificationMethod.filter(({ id }) => keyIDs.has(id));
 
@@ -153,6 +149,36 @@ export async function verifyJWSWithDID(didURI: string, jws: string): Promise<voi
                 .then(() => {})
                 .catch(e => Promise.reject(new SignatureNotValid(jws)));
 }
+/**
+ * Verify the provided JWS by fetching and examining the provided DID URI.
+ * If the JWS was not signed by one of the keys in the DID, rejects with `SignatureNotValid`.
+ */
+export async function verifyJWSWithDID(didURI: string, jws: string): Promise<void> {
+  // TODO: checking.
+  const didResponse = await (await fetchDID(didURI)) as DIDResponse;
+  return verifyJWSWithDIDResponse(didResponse, jws);
+}
+
+export class DIDResponsePublicKeySource implements PublicKeySource {
+  constructor(private did: DIDResponse) {
+  }
+
+  getPublicKey(uri: string): Promise<PublicJWK> {
+    if (!uri.startsWith(this.did.didDocument.id)) {
+      throw new Error('Public key does not belong to this DID.');
+    }
+    const suffix = uri.substring(this.did.didDocument.id.length);
+    const matchingMethod = this.did.didDocument.verificationMethod.find(method => method.id === suffix);
+    if (!matchingMethod) {
+      throw new Error('No matching verification method.');
+    }
+    return Promise.resolve(matchingMethod.publicKeyJwk);
+  }
+}
+
+export function verifyCredentialWithDIDResponse(credential: CredentialWithProof, did: DIDResponse): Promise<void> {
+  return verifyCredential(credential, new DIDResponsePublicKeySource(did));
+}
 
 /**
  * Verify all of the proofs in the provided credential, using the providing
@@ -160,6 +186,8 @@ export async function verifyJWSWithDID(didURI: string, jws: string): Promise<voi
  *
  * If the credentials proofs were not signed by retrievable keys, rejects with
  * `VerificationFailed`.
+ *
+ * TODO: how do we make sure that this credential is actually linked to the embedded proof?!
  */
 export async function verifyCredential(credential: CredentialWithProof, keySource: PublicKeySource): Promise<void> {
   async function verify(proofs: Proof[]): Promise<void> {

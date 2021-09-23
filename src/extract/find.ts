@@ -1,10 +1,13 @@
-import { TwitterFinderFactory } from "../resources/twitter";
-import type { ExtensionDIDStorage } from "../../webextension/storage";
-import type { CredentialFinder, CredentialReport, FinderFactory } from "./extractcredential";
+import { TwitterFinderFactory } from '../resources/twitter';
+import type { ExtensionDIDStorage, IPFSClaimStorage } from '../../webextension/storage';
+import type { CredentialFinder, CredentialReport, FinderFactory } from './extractcredential';
 
 const defaultFinders: {[key: string]: FinderFactory[]} = {
-  'https://twitter.com': [new TwitterFinderFactory()],
 };
+
+export function initializeFinders(claimStorage: IPFSClaimStorage) {
+  defaultFinders['https://twitter.com'] = [new TwitterFinderFactory(claimStorage)];
+}
 
 async function finderForURL(url: string): Promise<CredentialFinder | undefined> {
   // Match by origin, then by asking the factory itself.

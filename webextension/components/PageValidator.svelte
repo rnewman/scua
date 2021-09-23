@@ -1,5 +1,5 @@
 <script lang="ts">
-  import browser from 'webextension-polyfill';
+  import type browser from 'webextension-polyfill';
 
   import type { CredentialReport } from '../../src/extract/extractcredential';
   import { findCredentialForURL } from '../../src/extract/find';

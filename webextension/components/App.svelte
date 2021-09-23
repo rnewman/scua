@@ -1,18 +1,23 @@
 <svelte:options tag={null}/>
 <script lang="ts">
   import browser from 'webextension-polyfill';
+import { initializeFinders } from '../../src/extract/find';
   import { DIDIdentity } from '../../src/id';
+  import { TwitterClaim } from '../../src/resources/twitter';
 
-  import { ExtensionDIDStorage } from '../storage';
+  import { ExtensionDIDStorage, IPFSClaimStorage } from '../storage';
   import PageValidator from './PageValidator.svelte';
 
-  const storage: ExtensionDIDStorage = new ExtensionDIDStorage();
+  const didStorage: ExtensionDIDStorage = new ExtensionDIDStorage();
+  const claimStorage: IPFSClaimStorage = new IPFSClaimStorage();
+
+  initializeFinders(claimStorage);
 
   // TODO: better error handling.
   let selfDID: DIDIdentity | undefined;
   let selfDIDURI: string | undefined;
 
-  storage.getSelf().then(self => {
+  didStorage.getSelf().then(self => {
     selfDID = self;
     self.getURI().then(uri => {
       selfDIDURI = uri;
@@ -26,24 +31,11 @@
     return currentTabs && currentTabs[0];
   }
 
-  async function testIPFS() {
-    const start = Date.now();
-    /* @ts-ignore */
-    const ipfs = await window.IpfsCore.create()
-    const middle = Date.now();
-    const added = await ipfs.add('Hello world')
-    const end = Date.now();
-    console.info(added, 'took', end - start, middle - start);
-    await ipfs.stop();
-  }
-
-  testIPFS();
-
   async function logStorage(): Promise<void> {
-    console.info('Storage:', storage);
+    console.info('Storage:', didStorage);
 
     try {
-      console.info('Me:', await storage.getSelf())
+      console.info('Me:', await didStorage.getSelf())
     } catch (e) {
       console.info('No me.');
     }
@@ -56,7 +48,7 @@
   <div id="validate">
     <h1>Who owns this page?</h1>
     {#await currentTab() then tab}
-    <PageValidator {tab} {storage}></PageValidator>
+    <PageValidator {tab} storage={didStorage}></PageValidator>
     {/await}
   </div>
   <div id="identity">
@@ -69,7 +61,7 @@
         <p>No identity.</p>
         <button type="button" on:click="{async () => {
           const did = await DIDIdentity.create();
-          await storage.setSelf(did);
+          await didStorage.setSelf(did);
           const uri = await did.getURI();
           selfDID = did;
           selfDIDURI = uri;
@@ -85,7 +77,15 @@
   </div>
   <div id="claim">
     <h1>Claim this page</h1>
-    <button type="button">Claim</button>
+    <button type="button" disabled="{!selfDID}" on:click="{() => {
+      const claimer = new TwitterClaim('scuasky');
+      if (!selfDID) {
+        return;
+      }
+      claimer.claim(selfDID)
+             .then(credential => claimStorage.add(JSON.stringify(credential)))
+             .then(cid => console.info('Your claim:', cid.toString()));
+    }}">Claim</button>
   </div>
 </main>
 
