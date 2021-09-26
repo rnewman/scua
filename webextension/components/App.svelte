@@ -1,92 +1,122 @@
 <svelte:options tag={null}/>
 <script lang="ts">
   import browser from 'webextension-polyfill';
-import { initializeFinders } from '../../src/extract/find';
+
+  import type { CredentialFinder, CredentialReport } from '../../src/extract/extractcredential';
+
+  import { initializeFinders } from '../../src/extract/find';
   import { DIDIdentity } from '../../src/id';
-  import { TwitterClaim } from '../../src/resources/twitter';
+  import { examineCredential } from '../pages';
 
   import { ExtensionDIDStorage, IPFSClaimStorage } from '../storage';
-  import PageValidator from './PageValidator.svelte';
+  import { self, selfURI } from '../stores';
+
+  import PresentCredential from './PresentCredential.svelte';
+
+  //
+  // Initialize everything we need:
+  // * The finders, which pull info from the page and stores.
+  // * Our DID and credential storage, which we pre-populate with our own DID.
+  // * The URL of the current tab. There are a few ways to do this; we do it with `b.t.query`.
+  //
 
   const didStorage: ExtensionDIDStorage = new ExtensionDIDStorage();
   const claimStorage: IPFSClaimStorage = new IPFSClaimStorage();
 
   initializeFinders(claimStorage);
 
-  // TODO: better error handling.
-  let selfDID: DIDIdentity | undefined;
-  let selfDIDURI: string | undefined;
+  didStorage.getSelf().then(s => self.set(s)).catch(e => {
+    console.warn('Unable to load self DID:', e);
+  });
 
-  didStorage.getSelf().then(self => {
-    selfDID = self;
-    self.getURI().then(uri => {
-      selfDIDURI = uri;
-    });
-  }).catch(() => undefined);
-
-  // TODO: watch the storage! Make it a Svelte store!
-
-  async function currentTab(): Promise<browser.Tabs.Tab> {
+  async function getCurrentTab(): Promise<browser.Tabs.Tab> {
     const currentTabs = await browser.tabs.query({ active: true, currentWindow: true });
     return currentTabs && currentTabs[0];
   }
 
-  async function logStorage(): Promise<void> {
-    console.info('Storage:', didStorage);
+  let initializing = true;
 
-    try {
-      console.info('Me:', await didStorage.getSelf())
-    } catch (e) {
-      console.info('No me.');
+  let currentTab: browser.Tabs.Tab | undefined;
+  let credentialFinder: CredentialFinder | undefined;
+  let credentialReport: CredentialReport | undefined;
+  let selfClaim: string | undefined;
+
+  // We will re-render as soon as this is done.
+  getCurrentTab().then(t => {
+    currentTab = t;
+    if (t?.url) {
+      return examineCredential(t.url, didStorage).then(result => {
+        if (result) {
+          const { finder, report } = result;
+          credentialFinder = finder;
+          credentialReport = report;
+          // foundCredential = report?.found;
+        }
+      }).catch(e => {
+        console.error('Could not examine credential.', e);
+      });
+    } else {
+      return Promise.resolve();
     }
-  }
-
-  logStorage();
+  }).then(() => {
+    initializing = false;
+  });
 </script>
 
 <main>
-  <div id="validate">
-    <h1>Who owns this page?</h1>
-    {#await currentTab() then tab}
-    <PageValidator {tab} storage={didStorage}></PageValidator>
-    {/await}
-  </div>
-  <div id="identity">
-    <h1>Your identity</h1>
-
-    <div>
-      {#if selfDIDURI}
-        <p>{selfDIDURI}</p>
+  {#if initializing}
+    <p>Initializing…</p>
+  {:else}
+    <div id="validate">
+      <h1>Who owns this page?</h1>
+      {#if currentTab}
+        {#if credentialFinder}
+          {#if credentialReport?.found}
+            <PresentCredential tab={currentTab} report={credentialReport}></PresentCredential>
+          {:else}
+            {#if selfClaim}
+              <p>Paste the following into your Twitter bio!</p>
+              <pre>scua:{selfClaim}</pre>
+            {:else}
+              <p>Nobody has claimed ownership of {currentTab.url}. Maybe you should?</p>
+              <button type="button" disabled="{!$self}" on:click="{async () => {
+                if (!$self || !credentialFinder) {
+                  return;
+                }
+                const credential = await credentialFinder.claim($self);
+                const cid = await claimStorage.add(JSON.stringify(credential));
+                selfClaim = cid.toString();
+              }}">Claim</button>
+            {/if}
+          {/if}
+        {:else}
+          <p>I'm afraid I don't know what to do with this page yet.</p>
+        {/if}
       {:else}
-        <p>No identity.</p>
-        <button type="button" on:click="{async () => {
-          const did = await DIDIdentity.create();
-          await didStorage.setSelf(did);
-          const uri = await did.getURI();
-          selfDID = did;
-          selfDIDURI = uri;
-        }}">Generate</button>
+      <p>No current tab.</p>
       {/if}
     </div>
-    <div>
-      <button type="button">Import</button>
+    <div id="identity">
+      <h1>Your identity</h1>
+
+      <div>
+        {#if $selfURI}
+          <p>{$selfURI}</p>
+        {:else}
+          <p>No identity.</p>
+          <button type="button" on:click="{() => {
+            DIDIdentity.create().then(self.set);
+          }}">Generate</button>
+        {/if}
+      </div>
+      <div>
+        <button type="button">Import</button>
+      </div>
+      <div>
+        <button type="button" disabled>Export</button>
+      </div>
     </div>
-    <div>
-      <button type="button" disabled>Export</button>
-    </div>
-  </div>
-  <div id="claim">
-    <h1>Claim this page</h1>
-    <button type="button" disabled="{!selfDID}" on:click="{() => {
-      const claimer = new TwitterClaim('scuasky');
-      if (!selfDID) {
-        return;
-      }
-      claimer.claim(selfDID)
-             .then(credential => claimStorage.add(JSON.stringify(credential)))
-             .then(cid => console.info('Your claim:', cid.toString()));
-    }}">Claim</button>
-  </div>
+  {/if}
 </main>
 
 <style>

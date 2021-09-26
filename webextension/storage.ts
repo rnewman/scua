@@ -17,6 +17,9 @@ const getOne = async (key: string): Promise<any | undefined> => {
 }
 
 // TODO: failure.
+// TODO: DID cache.
+// TODO: credential cache (with expiry, note problems with revocation).
+
 export class IPFSClaimStorage {
   private ipfs: Promise<IPFS>;
   constructor() {

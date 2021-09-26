@@ -1,10 +1,8 @@
 import type { ExtensionDIDStorage, IPFSClaimStorage } from '../../webextension/storage';
 import type { CredentialWithProof } from '../credential';
-import type { PublicJWK } from '../did';
 import { VerificationFailed } from '../errors';
 import { CredentialFinder, CredentialReport, FinderFactory } from '../extract/extractcredential';
 import { DIDIdentity, verifyCredentialWithDIDResponse } from '../id';
-import type { Claimable } from './claim';
 
 import * as browser from 'webextension-polyfill';
 
@@ -50,7 +48,11 @@ class TwitterCredentialFinder extends CredentialFinder {
     console.info('Claim CID is', claimCID);
 
     if (!claimCID) {
-      return;
+      return {
+        url: this.url,
+        canonicalURL: this.canonicalURL,
+        found: undefined,
+      };
     }
 
     //const claimCID = 'scua:QmcyeE3iqrX5wR2p4Y6xKKVDXPCd2rjo4fYsSYETuDyMwq';
@@ -73,7 +75,11 @@ class TwitterCredentialFinder extends CredentialFinder {
     console.info('Found claimant', did);
 
     if (!did) {
-      return;
+      return {
+        url: this.url,
+        canonicalURL: this.canonicalURL,
+        found: undefined,
+      };
     }
 
     let verified: boolean;
@@ -96,33 +102,18 @@ class TwitterCredentialFinder extends CredentialFinder {
     return {
       url: this.url,
       canonicalURL: this.canonicalURL,
-      kind: 'https://twitter.com#profile',
-      indirect: 'ipns://',
-      resolved: 'ipfs://',
-      credential,
-      verified,
-      validated,
+      found: {
+        kind: 'https://twitter.com#profile',
+        indirect: 'ipns://',
+        resolved: 'ipfs://',
+        credential,
+        verified,
+        validated,
+      }
     };
   }
-}
 
-export class TwitterClaim implements Claimable {
-  constructor(private username: string) {
-    // TODO: validate username.
+  claim(did: DIDIdentity): Promise<CredentialWithProof> {
+    return did.claimOwnership(this.canonicalURL);
   }
-
-  async claim(did: DIDIdentity, _additionalKey?: PublicJWK): Promise<CredentialWithProof> {
-    // TODO: we either need to compact this or publish it to IPFS,
-    // then apply the claim to Twitter.
-    return did.claimOwnership('https://twitter.com/' + this.username);
-  }
-
-  verify(didURI?: string): Promise<string> {
-    // TODO: fetch from Twitter, construct the credential, then verify it
-    // against the DID (first short, then by fetching and verifying).
-    // We need to do a further step to validate, which is to compare the claim
-    // inside the credential to the username.
-    throw new Error('Method not implemented.');
-  }
-
 }
