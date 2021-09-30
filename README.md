@@ -63,3 +63,24 @@ npm run TODO
 ```
 
 ## Critique of tooling
+
+### IPFS packages
+
+A number of the IFPS packages have broken dependencies, missing dependencies, or other issues; for example, `@chris.troutner/ipfs-core-types` depends on `ipld-dag-pb` which is deprecated (replaced by `@ipld/dag-pb`) and broken:
+
+```
+node_modules/ipld-dag-pb/dist/src/genCid.d.ts:15:37 - error TS2307: Cannot find module 'multihashes/dist/src/constants' or its corresponding type declarations.
+
+15 export const defaultHashAlg: import("multihashes/dist/src/constants").HashCode;
+                                       ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+```
+
+This makes it difficult to keep a client working, and indeed the non-browser part of this repo is currently broken by this IPFS code.
+
+### Content Security Policy
+
+Additionally, IPFS and ION both require connections to various nodes, and that set is not guaranteed to remain unchanged. This is in tension with the need for WebExtensions to specify an exhaustive and tight Content Security Policy; a client that connects to the ION network and IPFS essentially needs to allow for arbitrary websockets, which I did not do in this experiment for security reasons. Changing this assumption is necessary to achieve true decentralization, but requires a great deal more scrutiny around security.
+
+### Pinning
+
+Storage in IPFS is not persistent unless a node pins content on your behalf. Control over pinning from a fully decentralized, client-only piece of software is a challenge to say the least. This could be partly addressed by re-adding credentials each time the client connects to IPFS, and allowing credentials to be unavailable for some period of time while client nodes are absent. This problem is a challenge for IPFS as a whole.
