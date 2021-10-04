@@ -1,5 +1,6 @@
 import { TwitterFinderFactory } from '../resources/twitter';
-import type { ExtensionDIDStorage, IPFSClaimStorage } from '../../webextension/storage';
+import type { ExtensionDIDStorage } from '../../webextension/storage/dids';
+import type { IPFSClaimStorage } from '../../webextension/storage/credentials';
 import type { CredentialFinder, FinderFactory, FinderResult } from './extractcredential';
 
 const defaultFinders: {[key: string]: FinderFactory[]} = {

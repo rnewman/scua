@@ -8,6 +8,7 @@ import sveltePreprocess from 'svelte-preprocess';
 import css from 'rollup-plugin-css-only';
 import json from '@rollup/plugin-json';
 import nodePolyfills from 'rollup-plugin-polyfill-node';
+import replace from 'rollup-plugin-replace';
 
 const production = !process.env.ROLLUP_WATCH;
 
@@ -42,9 +43,9 @@ export default {
 		intro: 'const global = window;',  // Massive hack for rollup.
 	},
 	plugins: [
-		nodePolyfills({
-			crypto: false,   // We will use WebCrypto.
-			include: ['../node_modules/**/*.ts', '../src/**/*.ts', '**/*.ts'],
+		replace({
+			'Object.defineProperty(exports, "__esModule", { value: true });': '',
+			delimiters: ['\n', '\n']
 		}),
 
 		svelte({
@@ -60,21 +61,6 @@ export default {
 		// a separate file - better for performance
 		css({ output: 'scua.css' }),
 
-		// If you have external dependencies installed from
-		// npm, you'll most likely need these plugins. In
-		// some cases you'll need additional configuration -
-		// consult the documentation for details:
-		// https://github.com/rollup/plugins/tree/master/packages/commonjs
-		resolve({
-			browser: false,
-			dedupe: ['svelte']
-		}),
-		typescript({
-			include: ['*.ts', '../src/**/*.ts'],
-			sourceMap: !production,
-			inlineSources: !production
-		}),
-
 		commonjs({
 			include: [
 				// 'default' is not exported.
@@ -83,11 +69,48 @@ export default {
 				// Rewrite `require`.
 				'node_modules/@transmute/did-key-common/dist/*.js',
 
+				// 'node_modules/quadstore/**/*.js',
+				// 'node_modules/quadstore-comunica/**/*.js',
+				// 'node_modules/rdf-data-factory/**/*.js',
+				// 'node_modules/abstract-leveldown/**/*.js',
+				// 'node_modules/level-js/**/*.js',
+
 				'node_modules/ipfs*/**/*.js',
 				'../node_modules/**/*.js',
-		  	'../src/**/*.js',
+			'../src/**/*.js',
 			],
 		}),
+
+		// If you have external dependencies installed from
+		// npm, you'll most likely need these plugins. In
+		// some cases you'll need additional configuration -
+		// consult the documentation for details:
+		// https://github.com/rollup/plugins/tree/master/packages/commonjs
+		resolve({
+			browser: false,
+			dedupe: ['svelte'],
+			preferBuiltins: false,
+		}),
+
+		typescript({
+			include: ['**/*.ts', '../src/**/*.ts'],
+			sourceMap: !production,
+			inlineSources: !production
+		}),
+
+		nodePolyfills({
+			buffer: true,
+			events: true,
+			crypto: false,   // We will use WebCrypto.
+			include: [
+				// 'node_modules/quadstore-comunica',
+				// 'node_modules/level-js',
+				'../node_modules/**/*.ts',
+				'../src/**/*.ts',
+				'**/*.ts',
+			],
+		}),
+
 
 		// Because `elliptic`'s package.json was being imported by dependencies.
 		// Frontend engineering is *wild*.
@@ -107,6 +130,6 @@ export default {
 	],
 	watch: {
 		clearScreen: false
-	}
+	},
 };
 

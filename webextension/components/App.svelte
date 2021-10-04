@@ -8,7 +8,10 @@
   import { DIDIdentity } from '../../src/id';
   import { examineCredential } from '../pages';
 
-  import { ExtensionDIDStorage, IPFSClaimStorage } from '../storage';
+  import { ExtensionDIDStorage } from '../storage/dids';
+  import { GraphStore } from '../storage/graph';
+  import { IPFSClaimStorage } from '../storage/credentials';
+
   import { self, selfURI } from '../stores';
 
   import PresentCredential from './PresentCredential.svelte';
@@ -22,6 +25,7 @@
 
   const didStorage: ExtensionDIDStorage = new ExtensionDIDStorage();
   const claimStorage: IPFSClaimStorage = new IPFSClaimStorage();
+  const graphStore: GraphStore = new GraphStore();
 
   initializeFinders(claimStorage);
 
@@ -51,6 +55,9 @@
           credentialFinder = finder;
           credentialReport = report;
           // foundCredential = report?.found;
+          if (report) {
+            graphStore.saveCredential(report);
+          }
         }
       }).catch(e => {
         console.error('Could not examine credential.', e);
@@ -72,7 +79,7 @@
       {#if currentTab}
         {#if credentialFinder}
           {#if credentialReport?.found}
-            <PresentCredential tab={currentTab} report={credentialReport}></PresentCredential>
+            <PresentCredential {graphStore} tab={currentTab} report={credentialReport}></PresentCredential>
           {:else}
             {#if selfClaim}
               <p>Paste the following into your Twitter bio!</p>

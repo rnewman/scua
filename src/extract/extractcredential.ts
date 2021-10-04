@@ -1,4 +1,4 @@
-import type { ExtensionDIDStorage } from '../../webextension/storage';
+import type { ExtensionDIDStorage } from '../../webextension/storage/dids';
 import type { CredentialWithProof } from '../credential';
 import type { DIDIdentity } from '../id';
 

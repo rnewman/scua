@@ -1,6 +1,6 @@
 import type { FinderResult } from "../src/extract/extractcredential";
 import { findCredentialForURL } from "../src/extract/find";
-import type { ExtensionDIDStorage } from "./storage";
+import type { ExtensionDIDStorage } from "./storage/dids";
 
 export async function examineCredential(url: string, storage: ExtensionDIDStorage): Promise<FinderResult | undefined> {
   if (!url) {

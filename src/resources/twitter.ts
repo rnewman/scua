@@ -1,4 +1,5 @@
-import type { ExtensionDIDStorage, IPFSClaimStorage } from '../../webextension/storage';
+import type { ExtensionDIDStorage } from '../../webextension/storage/dids';
+import type { IPFSClaimStorage } from '../../webextension/storage/credentials';
 import type { CredentialWithProof } from '../credential';
 import { VerificationFailed } from '../errors';
 import { CredentialFinder, CredentialReport, FinderFactory } from '../extract/extractcredential';
