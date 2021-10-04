@@ -28,15 +28,6 @@ This project uses:
 
 For development you should install [HomeBrew](https://brew.sh/), then the following:
 
-#### ipfs
-
-See [the detailed instructions](https://docs.ipfs.io/install/command-line/#official-distributions), particularly for M1 Macs. The easy way to install is via HomeBrew:
-
-```sh
-brew install ipfs
-ipfs --version         # Should print "ipfs version 0.9.1" at time of writing.
-```
-
 #### NodeJS
 
 NodeJS is at v16 now. Some systems (e.g., ION) are only tested with NodeJS 14. Use [nvm](https://github.com/nvm-sh/nvm) to manage your NodeJS versions:
@@ -50,17 +41,16 @@ nvm use 16
 
 ## Getting started
 
-This is a NodeJS project, so run
-
 ```sh
 npm install
+cd webextension
+npm install
+npm run build
 ```
 
-## Creating an ION identity
+Now add the WebExtension to Chrome via [chrome://extensions/](chrome://extensions/): choose "Load unpacked" and pick the `webextension` directory.
 
-```sh
-npm run TODO
-```
+On a Twitter profile page, click the icon in the toolbar.
 
 ## Critique of tooling
 
