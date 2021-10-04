@@ -17,6 +17,9 @@ export class TwitterFinderFactory implements FinderFactory {
     }
 
     const canonical = matches[1];
+    if (['home', 'explore', 'notifications', 'messages', 'i/bookmarks'].includes(canonical)) {
+      return;
+    }
     return new TwitterCredentialFinder(url, canonical, this.claimStorage);
   }
 }
