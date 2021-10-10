@@ -1,3 +1,4 @@
+import { RedditFinderFactory } from '../lib/resources/reddit';
 import { TwitterFinderFactory } from '../lib/resources/twitter';
 import type { ExtensionDIDStorage } from '../storage/dids';
 import type { IPFSClaimStorage } from '../storage/credentials';
@@ -7,6 +8,9 @@ const defaultFinders: {[key: string]: FinderFactory[]} = {
 };
 
 export function initializeFinders(claimStorage: IPFSClaimStorage) {
+  const reddit = new RedditFinderFactory(claimStorage);
+  defaultFinders['https://reddit.com'] = [reddit];
+  defaultFinders['https://www.reddit.com'] = [reddit];
   defaultFinders['https://twitter.com'] = [new TwitterFinderFactory(claimStorage)];
 }
 

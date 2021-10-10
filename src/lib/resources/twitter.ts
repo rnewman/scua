@@ -30,13 +30,13 @@ class TwitterCredentialFinder extends CredentialFinder {
   }
 
   getTwitterName(): string | undefined {
-    const match = /^https\:\/\/twitter.com\/([^\/?#]+)/.exec(this.canonicalURL);
+    const match = /^https\:\/\/twitter\.com\/([^\/?#]+)/.exec(this.canonicalURL);
     return match && match[1] || undefined;
   }
 
   getTwitterBio(): Promise<string> {
     return browser.tabs.executeScript({
-      code: `console.info("hi"); document.querySelectorAll('[data-testid="UserDescription"]')[0].innerText`
+      code: `document.querySelectorAll('[data-testid="UserDescription"]')[0].innerText`
     }).then(results => results[0]).catch(console.error);
   }
 

@@ -86,7 +86,7 @@
             <PresentCredential me={$selfURI} {graphStore} tab={currentTab} report={credentialReport}></PresentCredential>
           {:else}
             {#if selfClaim}
-              <p>Paste the following into your Twitter bio!</p>
+              <p>Paste the following into your bio!</p>
               <pre>scua:{selfClaim}</pre>
             {:else}
               <p>Nobody has claimed ownership of {currentTab.url}. Maybe you should?</p>

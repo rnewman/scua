@@ -7,36 +7,34 @@ import { DIDIdentity, verifyCredentialWithDIDResponse } from '../id';
 
 import * as browser from 'webextension-polyfill';
 
-export class TwitterFinderFactory implements FinderFactory {
+export class RedditFinderFactory implements FinderFactory {
   constructor(private claimStorage: IPFSClaimStorage) {}
 
   async forURL(url: string): Promise<CredentialFinder | undefined> {
-    const matches = /^(https:\/\/twitter\.com\/[^\/?#]+)(\?.*)?(#.*)?$/.exec(url);
+    const matches = /^(https:\/\/(?:www\.)reddit\.com\/user\/[^\/?#]+)(\?.*)?(#.*)?$/.exec(url);
     if (!matches) {
       return;
     }
 
     const canonical = matches[1];
-    if (['home', 'explore', 'notifications', 'messages', 'i/bookmarks'].includes(canonical)) {
-      return;
-    }
-    return new TwitterCredentialFinder(url, canonical, this.claimStorage);
+    return new RedditCredentialFinder(url, canonical, this.claimStorage);
   }
 }
 
-class TwitterCredentialFinder extends CredentialFinder {
+class RedditCredentialFinder extends CredentialFinder {
   constructor(private url: string, private canonicalURL: string, private claimStorage: IPFSClaimStorage) {
     super();
   }
 
-  getTwitterName(): string | undefined {
-    const match = /^https\:\/\/twitter.com\/([^\/?#]+)/.exec(this.canonicalURL);
+  getRedditName(): string | undefined {
+    const match = /^https\:\/\/(?:www\.)reddit\.com\/user\/([^\/?#]+)/.exec(this.canonicalURL);
     return match && match[1] || undefined;
   }
 
-  getTwitterBio(): Promise<string> {
+  getRedditBio(): Promise<string> {
     return browser.tabs.executeScript({
-      code: `console.info("hi"); document.querySelectorAll('[data-testid="UserDescription"]')[0].innerText`
+      // This is very fragile.
+      code: `document.querySelectorAll('[class="bVfceI5F_twrnRcVO1328"]')[0].innerText`
     }).then(results => results[0]).catch(console.error);
   }
 
@@ -46,8 +44,8 @@ class TwitterCredentialFinder extends CredentialFinder {
   }
 
   async findCredentials(storage: ExtensionDIDStorage): Promise<CredentialReport | undefined> {
-    const bio = await this.getTwitterBio();
-    console.info('Twitter bio is', bio);
+    const bio = await this.getRedditBio();
+    console.info('Reddit bio is', bio);
     const claimCID = this.getClaimFromBio(bio);
     console.info('Claim CID is', claimCID);
 
@@ -107,7 +105,7 @@ class TwitterCredentialFinder extends CredentialFinder {
       url: this.url,
       canonicalURL: this.canonicalURL,
       found: {
-        kind: 'https://twitter.com#profile',
+        kind: 'https://reddit.com#profile',
         indirect: '',
         resolved: `ipfs://${claimCID.toString()}`,
         credential,
