@@ -1,6 +1,6 @@
-import type { ExtensionDIDStorage } from '../../webextension/storage/dids';
-import type { CredentialWithProof } from '../credential';
-import type { DIDIdentity } from '../id';
+import type { ExtensionDIDStorage } from '../storage/dids';
+import type { CredentialWithProof } from '../lib/credential';
+import type { DIDIdentity } from '../lib/id';
 
 export interface FoundCredential {
   kind: string;           // https://twitter.com#profile

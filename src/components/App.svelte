@@ -2,10 +2,10 @@
 <script lang="ts">
   import browser from 'webextension-polyfill';
 
-  import type { CredentialFinder, CredentialReport } from '../../src/extract/extractcredential';
+  import type { CredentialFinder, CredentialReport } from '../extract/extractcredential';
 
-  import { initializeFinders } from '../../src/extract/find';
-  import { DIDIdentity } from '../../src/id';
+  import { initializeFinders } from '../extract/find';
+  import { DIDIdentity } from '../lib/id';
   import { examineCredential } from '../pages';
 
   import { ExtensionDIDStorage } from '../storage/dids';
@@ -75,11 +75,15 @@
     <p>Initializing…</p>
   {:else}
     <div id="validate">
-      <h1>Who owns this page?</h1>
+      {#if $selfURI === credentialReport?.found?.credential.credentialSubject.id}
+        <h1>You own this page!</h1>
+      {:else}
+        <h1>Who owns this page?</h1>
+      {/if}
       {#if currentTab}
         {#if credentialFinder}
           {#if credentialReport?.found}
-            <PresentCredential {graphStore} tab={currentTab} report={credentialReport}></PresentCredential>
+            <PresentCredential me={$selfURI} {graphStore} tab={currentTab} report={credentialReport}></PresentCredential>
           {:else}
             {#if selfClaim}
               <p>Paste the following into your Twitter bio!</p>
@@ -100,7 +104,7 @@
           <p>I'm afraid I don't know what to do with this page yet.</p>
         {/if}
       {:else}
-      <p>No current tab.</p>
+        <p>No current tab.</p>
       {/if}
     </div>
     <div id="identity">
@@ -112,12 +116,15 @@
         {:else}
           <p>No identity.</p>
           <button type="button" on:click="{() => {
-            DIDIdentity.create().then(self.set);
+            DIDIdentity.create().then(identity => {
+              didStorage.setSelf(identity);
+              self.set(identity);
+            });
           }}">Generate</button>
         {/if}
       </div>
       <div>
-        <button type="button">Import</button>
+        <button type="button" disabled>Import</button>
       </div>
       <div>
         <button type="button" disabled>Export</button>

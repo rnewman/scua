@@ -34,7 +34,7 @@ function serve() {
 }
 
 export default {
-	input: './main.ts',
+	input: './src/main.ts',
 	output: {
 		sourcemap: false,
 		name: 'scua',
@@ -43,6 +43,22 @@ export default {
 		intro: 'const global = window;',  // Massive hack for rollup.
 	},
 	plugins: [
+		commonjs({
+			include: [
+				// 'default' is not exported.
+				'node_modules/webextension-polyfill/dist/browser-polyfill.js',
+
+				// Rewrite `require`.
+				'node_modules/@transmute/did-key-common/dist/*.js',
+
+				// 'node_modules/ipfs*/**/*.js',
+				// 'node_modules/*/**/*.js',
+				// 'src/**/*.js',
+			],
+			exclude: [
+			],
+		}),
+
 		replace({
 			'Object.defineProperty(exports, "__esModule", { value: true });': '',
 			delimiters: ['\n', '\n']
@@ -61,25 +77,17 @@ export default {
 		// a separate file - better for performance
 		css({ output: 'scua.css' }),
 
-		commonjs({
+		nodePolyfills({
+			buffer: true,
+			events: true,
+			process: true,
+			crypto: false,   // We will use WebCrypto.
 			include: [
-				// 'default' is not exported.
-				'node_modules/webextension-polyfill/dist/browser-polyfill.js',
-
-				// Rewrite `require`.
-				'node_modules/@transmute/did-key-common/dist/*.js',
-
-				// 'node_modules/quadstore/**/*.js',
-				// 'node_modules/quadstore-comunica/**/*.js',
-				// 'node_modules/rdf-data-factory/**/*.js',
-				// 'node_modules/abstract-leveldown/**/*.js',
-				// 'node_modules/level-js/**/*.js',
-
-				'node_modules/ipfs*/**/*.js',
-				'../node_modules/**/*.js',
-			'../src/**/*.js',
+				'node_modules/**/*.ts',
+				'src/**/*.ts',
 			],
 		}),
+
 
 		// If you have external dependencies installed from
 		// npm, you'll most likely need these plugins. In
@@ -93,22 +101,9 @@ export default {
 		}),
 
 		typescript({
-			include: ['**/*.ts', '../src/**/*.ts'],
+			include: ['src/**/*.ts'],
 			sourceMap: !production,
 			inlineSources: !production
-		}),
-
-		nodePolyfills({
-			buffer: true,
-			events: true,
-			crypto: false,   // We will use WebCrypto.
-			include: [
-				// 'node_modules/quadstore-comunica',
-				// 'node_modules/level-js',
-				'../node_modules/**/*.ts',
-				'../src/**/*.ts',
-				'**/*.ts',
-			],
 		}),
 
 

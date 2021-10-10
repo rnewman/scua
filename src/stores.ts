@@ -1,5 +1,5 @@
 import { derived, writable } from 'svelte/store';
-import type { DIDIdentity } from '../src/id';
+import type { DIDIdentity } from './lib/id';
 
 export const self = writable<DIDIdentity | undefined>(undefined);
 export const selfURI = derived(self, ($self, set) => {

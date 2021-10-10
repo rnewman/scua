@@ -1,8 +1,8 @@
-import type { ExtensionDIDStorage } from '../../webextension/storage/dids';
-import type { IPFSClaimStorage } from '../../webextension/storage/credentials';
+import type { ExtensionDIDStorage } from '../../storage/dids';
+import type { IPFSClaimStorage } from '../../storage/credentials';
 import type { CredentialWithProof } from '../credential';
 import { VerificationFailed } from '../errors';
-import { CredentialFinder, CredentialReport, FinderFactory } from '../extract/extractcredential';
+import { CredentialFinder, CredentialReport, FinderFactory } from '../../extract/extractcredential';
 import { DIDIdentity, verifyCredentialWithDIDResponse } from '../id';
 
 import * as browser from 'webextension-polyfill';
@@ -108,8 +108,8 @@ class TwitterCredentialFinder extends CredentialFinder {
       canonicalURL: this.canonicalURL,
       found: {
         kind: 'https://twitter.com#profile',
-        indirect: 'ipns://',
-        resolved: 'ipfs://',
+        indirect: '',
+        resolved: `ipfs://${claimCID.toString()}`,
         credential,
         verified,
         validated,

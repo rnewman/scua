@@ -1,22 +1,30 @@
 <script lang="ts">
   import type browser from 'webextension-polyfill';
 
-  import type { CredentialReport } from '../../src/extract/extractcredential';
+  import type { CredentialReport } from '../extract/extractcredential';
   import type { GraphStore } from '../storage/graph';
 
+  export let me: string;
   export let tab: browser.Tabs.Tab;
   export let report: CredentialReport;
   export let graphStore: GraphStore;
 
   let owned: string[] = [];
+  let isMine: boolean = false;
 
   $: {
     if (report?.found) {
       graphStore.owns(report.found.credential.credentialSubject.id).then(urls => {
+        console.info('Also owns', urls);
         owned = urls;
       });
     }
   }
+
+  console.info('Me:', me);
+  console.info('owner:', report?.found?.credential.credentialSubject.id);
+  isMine = report?.found?.credential.credentialSubject.id === me;
+  console.info('isMine', isMine);
 </script>
 
 <!--
@@ -35,8 +43,9 @@
     <dt>Until</dt>
     <dd>{report.found.credential.expirationDate}</dd>
   </dl>
-  <p>The credential is:</p>
-  <pre width="360px" style="overflow: auto">{JSON.stringify(report, null, 2)}</pre>
+  {#if isMine}
+  This is yours!
+  {/if}
   {#if owned.length}
     <p>This identity owns:</p>
     <ul>
@@ -47,6 +56,8 @@
       {/each}
     </ul>
   {/if}
+  <p>The credential is:</p>
+  <pre width="360px" style="overflow: auto">{JSON.stringify(report, null, 2)}</pre>
 {:else}
 <p>No credential found.</p>
 {/if}

@@ -1,12 +1,12 @@
 {
   "manifest_version": 2,
   "name": "Scua",
-  "version": "1.0",
+  "version": "1.1",
   "description": "Decentralized identity experiment.",
 
   "icons": {
-    "48": "icons/icon-48.png",
-    "96": "icons/icon-96.png"
+    "48": "assets/icons/icon-48.png",
+    "96": "assets/icons/icon-96.png"
   },
 
   "permissions": [
@@ -22,12 +22,12 @@
     }
   ],
 
-  "content_security_policy": "default-src 'self'; connect-src 'self' wss://*.preload.ipfs.io wss://*.preload.libp2p.io wss://*.bootstrap.libp2p.io https://dns.google https://cloudflare-dns.com https://*.preload.ipfs.io https://*.did.microsoft.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/;",
+  "content_security_policy": "default-src 'self'; connect-src 'self' wss://* https://dns.google https://cloudflare-dns.com https://*.preload.ipfs.io https://*.did.microsoft.com; script-src 'self' 'unsafe-inline' https://cdn.jsdelivr.net/;",
 
   "browser_action": {
     "default_icon": {
-      "19": "buttons/button.svg",
-      "38": "buttons/button.svg"
+      "19": "assets/buttons/button-19.png",
+      "38": "assets/buttons/button-38.png"
     },
     "default_title": "Identity",
     "default_popup": "build/scua.html"

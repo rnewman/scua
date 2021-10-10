@@ -19,10 +19,14 @@ export class IPFSClaimStorage {
   }
 
   async get(cid: IPFSPath): Promise<string> {
+    console.info('Getting claim', cid);
     const ipfs = await this.ipfs;
     const decoder = new TextDecoder()
     let content = ''
-    for await (const chunk of ipfs.cat(cid)) {
+
+    // This will time out if the data wasn't pinned or is otherwise unavailable.
+    const chunks = ipfs.cat(cid, { timeout: 3_000 });
+    for await (const chunk of chunks) {
       content += decoder.decode(chunk)
     }
     return content;

@@ -1,8 +1,10 @@
-import { DIDIdentity, fetchDID } from "../../src/id";
 import browser from 'webextension-polyfill';
-import type { DIDResponse } from "../../src/did";
+
+import { DIDIdentity, fetchDID } from "../lib/id";
+import type { DIDResponse } from "../lib/did";
 
 const getOne = async (key: string): Promise<any | undefined> => {
+  console.info('Loading key', key);
   const records = await browser.storage.local.get(key);
   console.info('Got', records, 'for', key);
   const record = records && records[key];
