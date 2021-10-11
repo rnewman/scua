@@ -43,8 +43,6 @@ nvm use 16
 
 ```sh
 npm install
-cd webextension
-npm install
 npm run build
 ```
 
@@ -57,7 +55,15 @@ npm install --global web-ext
 web-ext build
 ```
 
-On a Twitter profile page, click the icon in the toolbar.
+## Trying it out
+
+Load one of:
+
+* A Twitter profile page
+* A GitHub project page
+* A Reddit user page
+
+Now click the icon in the toolbar. You'll see any claimed identity, and you are also able to generate your own DID and claim an existing page.
 
 ## Critique of tooling
 
