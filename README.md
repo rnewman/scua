@@ -48,7 +48,14 @@ npm install
 npm run build
 ```
 
-Now add the WebExtension to Chrome via [chrome://extensions/](chrome://extensions/): choose "Load unpacked" and pick the `webextension` directory.
+Now add the WebExtension to Chrome via [chrome://extensions/](chrome://extensions/): choose "Load unpacked" and pick the `webextension` directory. You can test similarly in Firefox via `about:debugging`
+
+You can also package the extension to load via the Add-ons UI:
+
+```sh
+npm install --global web-ext
+web-ext build
+```
 
 On a Twitter profile page, click the icon in the toolbar.
 

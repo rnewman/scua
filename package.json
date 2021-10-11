@@ -3,7 +3,7 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "copydeps": "cp thirdparty/ion.min.js build",
+    "copydeps": "cp thirdparty/*.min.js build",
     "copyhtml": "cp assets/templates/scua.html build",
     "build": "mkdir -p build && npm run copydeps && npm run copyhtml && rollup -c scua.config.js",
     "dev": "rollup -w -c scua.config.js",
