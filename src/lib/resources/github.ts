@@ -100,6 +100,8 @@ class GitHubCredentialFinder extends CredentialFinder {
     }
 
     console.info('Verified?', verified);
+    console.info('Canonical URL:', this.canonicalURL);
+    console.info('Claimed ID:', claimed.id);
 
     // And we just got the credential URL from the page, so we're done.
     const retrievedFromPage = true;

@@ -33,6 +33,9 @@
   ownerOf.id === credential.canonicalURL
   -->
 {#if report.found}
+  {#if !report.found.validated}
+    <h2>This claim did not validate!</h2>
+  {/if}
   <dl>
     <dt>URL</dt>
     <dd>{tab.url}</dd>
