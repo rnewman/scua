@@ -1,5 +1,6 @@
 import { RedditFinderFactory } from '../lib/resources/reddit';
 import { TwitterFinderFactory } from '../lib/resources/twitter';
+import { GitHubFinderFactory } from '../lib/resources/github';
 import type { ExtensionDIDStorage } from '../storage/dids';
 import type { IPFSClaimStorage } from '../storage/credentials';
 import type { CredentialFinder, FinderFactory, FinderResult } from './extractcredential';
@@ -12,6 +13,7 @@ export function initializeFinders(claimStorage: IPFSClaimStorage) {
   defaultFinders['https://reddit.com'] = [reddit];
   defaultFinders['https://www.reddit.com'] = [reddit];
   defaultFinders['https://twitter.com'] = [new TwitterFinderFactory(claimStorage)];
+  defaultFinders['https://github.com'] = [new GitHubFinderFactory(claimStorage)];
 }
 
 async function finderForURL(url: string): Promise<CredentialFinder | undefined> {
