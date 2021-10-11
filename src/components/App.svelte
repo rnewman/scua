@@ -75,7 +75,7 @@
     <p>Initializing…</p>
   {:else}
     <div id="validate">
-      {#if $selfURI === credentialReport?.found?.credential.credentialSubject.id}
+      {#if $selfURI && ($selfURI === credentialReport?.found?.credential.credentialSubject.id)}
         <h1>You own this page!</h1>
       {:else}
         <h1>Who owns this page?</h1>
