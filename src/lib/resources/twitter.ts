@@ -59,9 +59,6 @@ class TwitterCredentialFinder extends CredentialFinder {
       };
     }
 
-    //const claimCID = 'scua:QmcyeE3iqrX5wR2p4Y6xKKVDXPCd2rjo4fYsSYETuDyMwq';
-    console.info('TODO', this.url, this.canonicalURL, claimCID);
-
     const claimString = await this.claimStorage.get(claimCID);
 
     console.info('Claim string:', claimString);

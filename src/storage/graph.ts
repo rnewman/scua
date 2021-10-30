@@ -11,7 +11,6 @@ import { IDBPDatabase, openDB } from 'idb/with-async-ittr';
 interface DataType {};
 
 export class GraphStore {
-  // public _db: Quadstore;
   public db: Promise<IDBPDatabase<DataType>>;
   constructor(name = 'scua') {
     this.db = openDB<DataType>(name, 1, {
