@@ -1,7 +1,9 @@
 {
   "name": "scua-extension",
-  "version": "1.0.0",
-  "private": true,
+  "version": "0.0.1",
+  "author": "Richard Newman <rnewman@twinql.com>",
+  "description": "WebExtension experiment around distributed identity.",
+  "license": "MIT",
   "scripts": {
     "copydeps": "cp thirdparty/*.min.js build",
     "copyhtml": "cp assets/templates/scua.html build",

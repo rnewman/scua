@@ -12,7 +12,7 @@ See [DESIGN.md](docs/DESIGN.md) for an overview of the solution implemented in t
 
 This project is an experiment. It has not been vetted by experts, it cuts corners in implementation, and is likely to be cryptographically unsound. Be warned.
 
-Note particularly that this system generates private key material for DIDs and stores it in the browser's storage layer. Additionally, those private keys can be trivially exported, and must be stored in plaintext for later re-import. Do not use valuable private keys when evaluating this system.
+Note particularly that this system generates private key material for DIDs and stores it in the browser's storage layer. Those private keys can be trivially exported. Do not use valuable private keys when evaluating this system.
 
 ## Tooling
 
@@ -21,6 +21,8 @@ This project uses:
 * [DID](https://w3c-ccg.github.io/did-primer/)s as stable service- and resource-independent identifiers.
 * [ION](https://blog.ipfs.io/2021-03-24-own-your-identity-with-ion/) as an identity network that uses DIDs and Sidetree to provide DPKI.
 * Verifiable Credentials as a document format to make and verify assertions.
+
+The (extremely rough and ready) WebExtension uses Svelte.
 
 ## Dependencies
 
@@ -55,6 +57,8 @@ npm install --global web-ext
 web-ext build
 ```
 
+There is a second `package.json` inside the `src/lib` directory, which allows for some of this code to run in a plain Node environment. This is now secondary to the build process that generates the WebExtension.
+
 ## Trying it out
 
 Load one of:
@@ -87,3 +91,9 @@ Additionally, IPFS and ION both require connections to various nodes, and that s
 ### Pinning
 
 Storage in IPFS is not persistent unless a node pins content on your behalf. Control over pinning from a fully decentralized, client-only piece of software is a challenge to say the least. This could be partly addressed by re-adding credentials each time the client connects to IPFS, and allowing credentials to be unavailable for some period of time while client nodes are absent. This problem is a challenge for IPFS as a whole.
+
+## License, and how I built this
+
+Scua is an experimental side project, built entirely in my spare time on my personal devices. It has a single contributor: Richard Newman. It has no relationship to my employer.
+
+Scua is licensed under the MIT License.
